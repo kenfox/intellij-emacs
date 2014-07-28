@@ -49,34 +49,47 @@ registerAction("exchange-point-and-mark", "ctrl X, ctrl X") { AnActionEvent even
   }
 }
 
-// Killing the region works even though the region is not displayed.
+// Killing the region works even when the region is not selected.
 // The killed text goes onto the clipboard so it's compatible with
-// other IntelliJ clipboard functions.
+// other IntelliJ clipboard functions. If there is an active
+// selection, the selection will be killed instead of the region.
+//
+// TODO: use a selection listener to keep the mark in sync
 
 registerAction("kill-region", "ctrl W") { AnActionEvent event ->
   runDocumentWriteAction(event.project) {
     currentEditorIn(event.project).with {
       def mark = getUserData(MARK)
-      if (mark) {
-        def begin = mark.startOffset
-        def end = caretModel.offset
-        if (begin > end) {
-          (begin, end) = [end, begin]
-        }
-
-        def killedText = document.getText(new TextRange(begin, end))
-        CopyPasteManager.instance.contents = new StringSelection(killedText)
-
-        document.deleteString(begin, end)
+      if (selectionModel.hasSelection()) {
+        killRegion(document, selectionModel.selectionStart, selectionModel.selectionEnd)
+      }
+      else if (mark) {
+        killRegion(document, mark.startOffset, caretModel.offset)
       }
     }
   }
 }
 
+def killRegion(document, begin, end) {
+  if (begin > end) {
+    (begin, end) = [end, begin]
+  }
+
+  def killedText = document.getText(new TextRange(begin, end))
+  CopyPasteManager.instance.contents = new StringSelection(killedText)
+
+  document.deleteString(begin, end)
+}
+
 // It's not possible to rebind the general IntelliJ escape. If that
 // becomes possible in a future release, more comfortable and complete
 // emacs bindings will be possible. Compounding this limitation is the
-// fact that the Mac option key doesn't register with many key combos.
+// fact that the Mac option key doesn't register several key combos due
+// to the default Keymap having "dead" keys. Ukelele can be used to
+// create a new Keymap without any dead keys--I copied the default and
+// then redefined all option key combos to just return the normal key.
+// That also makes it easy to see when a key is mapped in IntelliJ
+// since it will just insert the key when not mapped.
 
 registerAction("keyboard-quit", "ctrl G") { AnActionEvent event ->
   runDocumentWriteAction(event.project) {
