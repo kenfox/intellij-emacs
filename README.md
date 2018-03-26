@@ -18,15 +18,34 @@ These are not packaged and polished by any stretch of the imagination, but
 they make switching back and forth between IntelliJ and emacs much more
 pleasant for me.
 
+
+Setup
+-----
+
 `LivePlugin` had trouble running the macros directly out of a git
 repo, so copy the macros into your `live-plugin` directory:
+
+### MacOSX
 
 ```
 tar cf - */*.groovy | (cd ~/'Library/Application Support/IntelliJIdea13/live-plugins'; tar xf -)
 ```
 
-I'm not sure where that is on Windows or Linux--if someone wants to send
+### GNU/Linux
+
+
+```
+tar cf - */*.groovy | (cd ~/".IdeaIC2017.3/config/plugins/live-plugins"; tar xf -)
+```
+
+### Windows
+
+I'm not sure where that is on Windows--if someone wants to send
 me a patch that'd be great.
+
+
+Notes
+-----
 
 If you are having trouble on Mac OS with certain option key combinations
 not recognized (they will be just dead keys) in IntelliJ, you can try using
